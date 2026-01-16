@@ -20,14 +20,7 @@
                     <td>{{ $user->email }}</td>
                 </tr>
 
-                <tr>
-                    <th>Login Key</th>
-                    <td>
-                        <span class="badge bg-dark fs-6">
-                            {{ $user->login_key }}
-                        </span>
-                    </td>
-                </tr>
+                
             </table>
 
             <div class="text-end mt-3">
