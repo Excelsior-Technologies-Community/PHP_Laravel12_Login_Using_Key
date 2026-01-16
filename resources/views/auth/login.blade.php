@@ -6,7 +6,7 @@
 <div class="row justify-content-center">
     <div class="col-md-5">
         <div class="card auth-card p-4">
-            <h3 class="text-center mb-3"> Login</h3>
+            <h3 class="text-center mb-3">Login</h3>
 
             {{-- SUCCESS --}}
             @if(session('success'))
@@ -25,29 +25,14 @@
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
-                {{-- EMAIL --}}
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        id="email"
-                        class="form-control"
-                        placeholder="Enter email"
-                        required
-                    >
-                </div>
-
-                {{-- LOGIN KEY (HIDDEN LIKE PASSWORD) --}}
+                {{-- ONLY LOGIN KEY --}}
                 <div class="mb-3">
                     <label class="form-label">Login Key</label>
                     <input
                         type="password"
                         name="key"
-                        id="login_key"
                         class="form-control"
-                       
-                        readonly
+                        placeholder="Enter your login key"
                         required
                     >
                 </div>
@@ -64,28 +49,4 @@
         </div>
     </div>
 </div>
-
-{{-- 🔥 AUTO LOAD KEY (BUT NOT VISIBLE) --}}
-<script>
-document.getElementById('email').addEventListener('blur', function () {
-    let email = this.value.trim();
-    let keyField = document.getElementById('login_key');
-
-    if (email === '') {
-        keyField.value = '';
-        return;
-    }
-
-    fetch(`/get-login-key?email=${email}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.status) {
-                keyField.value = data.key; // auto fill but hidden
-            } else {
-                keyField.value = '';
-                alert('Email not registered');
-            }
-        });
-});
-</script>
 @endsection

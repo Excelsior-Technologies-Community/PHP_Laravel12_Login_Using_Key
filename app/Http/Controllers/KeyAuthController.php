@@ -8,56 +8,51 @@ use Illuminate\Support\Facades\Session;
 
 class KeyAuthController extends Controller
 {
-    // 🔹 Register form
+    // 🔹 Register page
     public function registerForm()
     {
         return view('auth.register');
     }
 
-    // 🔹 Register save
+    // 🔹 Save Registration
     public function register(Request $request)
     {
         $request->validate([
-            'name'  => 'required',
-            'email' => 'required|email|unique:keyauth,email',
+            'name'       => 'required',
+            'email'      => 'required|email|unique:keyauth,email',
+            'login_key'  => 'required|min:4|max:4'
         ]);
-
-        // 🔑 ONE TIME KEY (6 digit)
-        $key = rand(100000, 999999);
 
         KeyAuth::create([
             'name'      => $request->name,
             'email'     => $request->email,
-            'login_key' => $key,
+            'login_key' => $request->login_key,
         ]);
 
         return redirect()->route('login.form')
-            ->with('success', 'Registration successful. Your login key is: ' . $key);
+            ->with('success', 'Registration successful! Use your login key.');
     }
 
-    // 🔹 Login form
+    // 🔹 Login page
     public function loginForm()
     {
         return view('auth.login');
     }
 
-    // 🔹 Login check
+    // 🔹 Login check (ONLY BY KEY)
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'key'   => 'required',
+            'key' => 'required'
         ]);
 
-        $user = KeyAuth::where('email', $request->email)
-            ->where('login_key', $request->key)
-            ->first();
+        // Find user only by key
+        $user = KeyAuth::where('login_key', $request->key)->first();
 
         if (!$user) {
-            return back()->with('error', 'Invalid Email or Key');
+            return back()->with('error', 'Invalid Login Key!');
         }
 
-        // session set
         Session::put('keyauth_user', $user->id);
 
         return redirect()->route('dashboard');
