@@ -97,56 +97,51 @@ use Illuminate\Support\Facades\Session;
 
 class KeyAuthController extends Controller
 {
-    // 🔹 Register form
+    // 🔹 Register page
     public function registerForm()
     {
         return view('auth.register');
     }
 
-    // 🔹 Register save
+    // 🔹 Save Registration
     public function register(Request $request)
     {
         $request->validate([
-            'name'  => 'required',
-            'email' => 'required|email|unique:keyauth,email',
+            'name'       => 'required',
+            'email'      => 'required|email|unique:keyauth,email',
+            'login_key'  => 'required|min:4|max:4'
         ]);
-
-        // 🔑 ONE TIME KEY (6 digit)
-        $key = rand(100000, 999999);
 
         KeyAuth::create([
             'name'      => $request->name,
             'email'     => $request->email,
-            'login_key' => $key,
+            'login_key' => $request->login_key,
         ]);
 
         return redirect()->route('login.form')
-            ->with('success', 'Registration successful. Your login key is: ' . $key);
+            ->with('success', 'Registration successful! Use your login key.');
     }
 
-    // 🔹 Login form
+    // 🔹 Login page
     public function loginForm()
     {
         return view('auth.login');
     }
 
-    // 🔹 Login check
+    // 🔹 Login check (ONLY BY KEY)
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'key'   => 'required',
+            'key' => 'required'
         ]);
 
-        $user = KeyAuth::where('email', $request->email)
-            ->where('login_key', $request->key)
-            ->first();
+        // Find user only by key
+        $user = KeyAuth::where('login_key', $request->key)->first();
 
         if (!$user) {
-            return back()->with('error', 'Invalid Email or Key');
+            return back()->with('error', 'Invalid Login Key!');
         }
 
-        // session set
         Session::put('keyauth_user', $user->id);
 
         return redirect()->route('dashboard');
@@ -171,6 +166,7 @@ class KeyAuthController extends Controller
         return redirect()->route('login.form');
     }
 }
+
 ```
 
 # Step 6: Create Routes for web.php file
@@ -230,23 +226,27 @@ Route::get('/get-login-key', function (\Illuminate\Http\Request $request) {
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('register') }}">
-                @csrf
+           <form method="POST" action="{{ route('register') }}">
+    @csrf
 
-                <div class="mb-3">
-                    <label class="form-label">Name</label>
-                    <input type="text" name="name" class="form-control" placeholder="Enter name">
-                </div>
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input type="text" name="name" class="form-control" required>
+    </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" placeholder="Enter email">
-                </div>
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" required>
+    </div>
 
-                <button class="btn btn-primary w-100">
-                    Register & Generate Key
-                </button>
-            </form>
+    <div class="mb-3">
+        <label class="form-label">Create Login Key (4 digit or custom)</label>
+        <input type="text" name="login_key" class="form-control" minlength="4" maxlength="4" required>
+    </div>
+
+    <button class="btn btn-primary w-100">Register</button>
+</form>
+
 
             <div class="text-center mt-3">
                 Already registered?
@@ -267,7 +267,7 @@ Route::get('/get-login-key', function (\Illuminate\Http\Request $request) {
 <div class="row justify-content-center">
     <div class="col-md-5">
         <div class="card auth-card p-4">
-            <h3 class="text-center mb-3"> Login</h3>
+            <h3 class="text-center mb-3">Login</h3>
 
             {{-- SUCCESS --}}
             @if(session('success'))
@@ -286,29 +286,14 @@ Route::get('/get-login-key', function (\Illuminate\Http\Request $request) {
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
-                {{-- EMAIL --}}
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        id="email"
-                        class="form-control"
-                        placeholder="Enter email"
-                        required
-                    >
-                </div>
-
-                {{-- LOGIN KEY (HIDDEN LIKE PASSWORD) --}}
+                {{-- ONLY LOGIN KEY --}}
                 <div class="mb-3">
                     <label class="form-label">Login Key</label>
                     <input
                         type="password"
                         name="key"
-                        id="login_key"
                         class="form-control"
-                       
-                        readonly
+                        placeholder="Enter your login key"
                         required
                     >
                 </div>
@@ -325,31 +310,8 @@ Route::get('/get-login-key', function (\Illuminate\Http\Request $request) {
         </div>
     </div>
 </div>
-
-{{-- 🔥 AUTO LOAD KEY (BUT NOT VISIBLE) --}}
-<script>
-document.getElementById('email').addEventListener('blur', function () {
-    let email = this.value.trim();
-    let keyField = document.getElementById('login_key');
-
-    if (email === '') {
-        keyField.value = '';
-        return;
-    }
-
-    fetch(`/get-login-key?email=${email}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.status) {
-                keyField.value = data.key; // auto fill but hidden
-            } else {
-                keyField.value = '';
-                alert('Email not registered');
-            }
-        });
-});
-</script>
 @endsection
+
 ```
 # resource/view/dashboard.blade.php
 ```php
@@ -361,15 +323,22 @@ document.getElementById('email').addEventListener('blur', function () {
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card auth-card p-4">
-            <h3 class="mb-3"> Welcome, {{ $user->name }}</h3>
+
+            <h3 class="mb-3">Welcome, {{ $user->name }}</h3>
 
             <table class="table table-bordered">
+                <tr>
+                    <th style="width: 200px;">Name</th>
+                    <td>{{ $user->name }}</td>
+                </tr>
+
                 <tr>
                     <th>Email</th>
                     <td>{{ $user->email }}</td>
                 </tr>
+
                 <tr>
-                    <th>Your Login Key</th>
+                    <th>Login Key</th>
                     <td>
                         <span class="badge bg-dark fs-6">
                             {{ $user->login_key }}
@@ -378,15 +347,17 @@ document.getElementById('email').addEventListener('blur', function () {
                 </tr>
             </table>
 
-            <div class="text-end">
+            <div class="text-end mt-3">
                 <a href="{{ route('logout') }}" class="btn btn-danger">
                     Logout
                 </a>
             </div>
+
         </div>
     </div>
 </div>
 @endsection
+
 ```
 # Now Run Project and paste this url
 ```php
@@ -395,9 +366,10 @@ Php artisan serve
 ```php
 http://127.0.0.1:8000/register
 ```
- <img width="1610" height="553" alt="image" src="https://github.com/user-attachments/assets/5bed81d8-13d8-433d-919c-317cdc7fd595" />
-<img width="1603" height="646" alt="image" src="https://github.com/user-attachments/assets/cb820b06-8ef3-4b34-9b8b-58703e6570e3" />
-<img width="1635" height="422" alt="image" src="https://github.com/user-attachments/assets/53f6ef96-8e89-41cc-a47f-c1edf9fd3b89" />
+<img width="1614" height="649" alt="image" src="https://github.com/user-attachments/assets/3a20d582-5301-4a70-89d8-ed1ce47e6cb4" />
+<img width="1645" height="529" alt="image" src="https://github.com/user-attachments/assets/780ca348-a8bd-4870-a5f0-ba9da7b3bfcf" />
+
+<img width="1580" height="480" alt="image" src="https://github.com/user-attachments/assets/94773890-213e-448a-bfac-7e02428f6f48" />
 
  
  
