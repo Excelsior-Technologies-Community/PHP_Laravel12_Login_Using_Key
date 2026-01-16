@@ -16,23 +16,27 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('register') }}">
-                @csrf
+           <form method="POST" action="{{ route('register') }}">
+    @csrf
 
-                <div class="mb-3">
-                    <label class="form-label">Name</label>
-                    <input type="text" name="name" class="form-control" placeholder="Enter name">
-                </div>
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input type="text" name="name" class="form-control" required>
+    </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" placeholder="Enter email">
-                </div>
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" required>
+    </div>
 
-                <button class="btn btn-primary w-100">
-                    Register & Generate Key
-                </button>
-            </form>
+    <div class="mb-3">
+        <label class="form-label">Create Login Key (4 digit or custom)</label>
+        <input type="text" name="login_key" class="form-control" minlength="4" maxlength="4" required>
+    </div>
+
+    <button class="btn btn-primary w-100">Register</button>
+</form>
+
 
             <div class="text-center mt-3">
                 Already registered?
