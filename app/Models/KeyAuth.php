@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Str;
 
 class KeyAuth extends Authenticatable
 {
@@ -40,24 +39,42 @@ class KeyAuth extends Authenticatable
         'password' => 'hashed',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function loginHistories()
     {
-        return $this->hasMany(LoginHistory::class);
+        return $this->hasMany(LoginHistory::class, 'keyauth_id');
     }
 
     public function sessions()
     {
-        return $this->hasMany(KeyAuthSession::class);
+        return $this->hasMany(KeyAuthSession::class, 'keyauth_id');
     }
 
     public function auditLogs()
     {
-        return $this->hasMany(AuditLog::class);
+        return $this->hasMany(AuditLog::class, 'keyauth_id');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Login Key
+    |--------------------------------------------------------------------------
+    */
 
     public function setLoginKeyAttribute($value)
     {
-        $this->attributes['login_key'] = hash_hmac('sha256', $value, config('app.key'));
+        if ($value !== null && $value !== '') {
+            $this->attributes['login_key'] = hash_hmac(
+                'sha256',
+                $value,
+                config('app.key')
+            );
+        }
     }
 
     public function getPlainLoginKey()
@@ -67,8 +84,17 @@ class KeyAuth extends Authenticatable
 
     public static function findByLoginKey(string $key)
     {
-        return static::where('login_key', hash_hmac('sha256', $key, config('app.key')))->first();
+        return static::where(
+            'login_key',
+            hash_hmac('sha256', $key, config('app.key'))
+        )->first();
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication
+    |--------------------------------------------------------------------------
+    */
 
     public function getAuthIdentifierName()
     {
@@ -92,13 +118,21 @@ class KeyAuth extends Authenticatable
 
     public function setRememberToken($value)
     {
-        $this->remember_token = $value;
+        if (!is_null($value)) {
+            $this->remember_token = $value;
+        }
     }
 
     public function getRememberTokenName()
     {
         return 'remember_token';
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Email Verification
+    |--------------------------------------------------------------------------
+    */
 
     public function hasVerifiedEmail()
     {
@@ -111,6 +145,12 @@ class KeyAuth extends Authenticatable
             'email_verified_at' => $this->freshTimestamp(),
         ])->save();
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Two Factor Authentication
+    |--------------------------------------------------------------------------
+    */
 
     public function hasConfirmedTwoFactor()
     {
@@ -127,6 +167,7 @@ class KeyAuth extends Authenticatable
     public function generateTwoFactorSecret()
     {
         $secret = base64_encode(random_bytes(16));
+
         $this->forceFill([
             'two_factor_secret' => encrypt($secret),
         ])->save();
@@ -136,30 +177,70 @@ class KeyAuth extends Authenticatable
 
     public function getTwoFactorSecret()
     {
+        if (!$this->two_factor_secret) {
+            return null;
+        }
+
         return decrypt($this->two_factor_secret);
     }
 
     public function getTwoFactorQrCodeUrl(string $secret): string
     {
-        $issuer = urlencode(config('app.name', 'Key Auth System'));
+        $issuer = urlencode(
+            config('app.name', 'Key Auth System')
+        );
+
         $account = urlencode($this->email);
+
         $rawSecret = base64_decode($secret, true);
+
         $base32Secret = $this->base32Encode($rawSecret);
 
-        return 'otpauth://totp/' . $issuer . ':' . $account . '?secret=' . $base32Secret . '&issuer=' . $issuer . '&algorithm=SHA1&digits=6&period=30';
+        return 'otpauth://totp/'
+            . $issuer
+            . ':'
+            . $account
+            . '?secret='
+            . $base32Secret
+            . '&issuer='
+            . $issuer
+            . '&algorithm=SHA1&digits=6&period=30';
     }
 
     private function base32Encode(string $data): string
     {
         $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+
         $binary = '';
+
         foreach (str_split($data) as $char) {
-            $binary .= sprintf('%08b', ord($char));
+            $binary .= sprintf(
+                '%08b',
+                ord($char)
+            );
         }
+
         $result = '';
+
         for ($i = 0; $i < strlen($binary); $i += 5) {
-            $result .= $alphabet[bindec(substr($binary, $i, 5))];
+
+            $chunk = substr(
+                $binary,
+                $i,
+                5
+            );
+
+            $chunk = str_pad(
+                $chunk,
+                5,
+                '0'
+            );
+
+            $result .= $alphabet[
+                bindec($chunk)
+            ];
         }
+
         return $result;
     }
 }
