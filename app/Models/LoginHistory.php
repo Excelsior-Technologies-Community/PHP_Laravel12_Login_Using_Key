@@ -11,6 +11,7 @@ class LoginHistory extends Model
 
     protected $fillable = [
         'keyauth_id',
+        'attempted_identifier',
         'ip_address',
         'user_agent',
         'device_type',
