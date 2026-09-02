@@ -1,68 +1,404 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
 
-@section('title', 'Login')
+<head>
 
-@section('content')
+    <meta charset="UTF-8">
 
-<div class="row justify-content-center">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Login - Key Auth</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+
+            background: linear-gradient(
+                135deg,
+                #667eea,
+                #764ba2
+            );
+
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 430px;
+        }
+
+        .auth-card {
+            background: #ffffff;
+
+            border-radius: 16px;
+
+            padding: 35px;
+
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.20);
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+
+            margin: 0 auto 15px;
+
+            border-radius: 50%;
+
+            background: linear-gradient(
+                135deg,
+                #667eea,
+                #764ba2
+            );
+
+            color: #ffffff;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 30px;
+        }
+
+        h1 {
+            text-align: center;
+
+            color: #222222;
+
+            margin-bottom: 8px;
+
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+
+            color: #777777;
+
+            margin-bottom: 28px;
+
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+
+            margin-bottom: 8px;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            color: #333333;
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+
+            padding: 13px 14px;
+
+            border: 1px solid #dddddd;
+
+            border-radius: 8px;
+
+            font-size: 15px;
+
+            outline: none;
+
+            transition: 0.2s;
+        }
+
+        input:focus {
+            border-color: #667eea;
+
+            box-shadow:
+                0 0 0 3px rgba(102, 126, 234, 0.12);
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 60px;
+        }
+
+        .toggle-password {
+            position: absolute;
+
+            right: 12px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            border: none;
+
+            background: transparent;
+
+            cursor: pointer;
+
+            color: #667eea;
+
+            font-size: 13px;
+
+            font-weight: 600;
+        }
+
+        .toggle-password:hover {
+            color: #4f5fd3;
+        }
+
+        .remember-row {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 20px;
+        }
+
+        .remember {
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            margin: 0;
+
+            font-weight: normal;
+
+            cursor: pointer;
+        }
+
+        .remember input {
+            width: auto;
+        }
+
+        .forgot-link {
+            color: #667eea;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            font-weight: 600;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            width: 100%;
+
+            border: none;
+
+            padding: 14px;
+
+            border-radius: 8px;
+
+            background: linear-gradient(
+                135deg,
+                #667eea,
+                #764ba2
+            );
+
+            color: #ffffff;
+
+            font-size: 16px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.92;
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 8px 20px rgba(102, 126, 234, 0.30);
+        }
+
+        .error {
+            color: #dc3545;
+
+            font-size: 13px;
+
+            margin-top: 6px;
+        }
+
+        .alert {
+            padding: 12px 14px;
+
+            border-radius: 8px;
+
+            margin-bottom: 20px;
+
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #e8f8ee;
+
+            color: #187a3d;
+
+            border: 1px solid #bce8ca;
+        }
+
+        .alert-error {
+            background: #fdeaea;
+
+            color: #b42318;
+
+            border: 1px solid #f5c2c0;
+        }
+
+        .verification-box {
+            background: #fff8e1;
+
+            border: 1px solid #ffe08a;
+
+            color: #7a5a00;
+
+            padding: 12px 14px;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+
+            margin-bottom: 20px;
+
+            line-height: 1.5;
+        }
+
+        .bottom-text {
+            text-align: center;
+
+            margin-top: 22px;
+
+            color: #777777;
+
+            font-size: 14px;
+        }
+
+        .bottom-text a {
+            color: #667eea;
+
+            text-decoration: none;
+
+            font-weight: 600;
+        }
+
+        .bottom-text a:hover {
+            text-decoration: underline;
+        }
+
+        .security-info {
+            margin-top: 22px;
+
+            padding-top: 18px;
+
+            border-top: 1px solid #eeeeee;
+
+            text-align: center;
+
+            color: #888888;
+
+            font-size: 12px;
+
+            line-height: 1.5;
+        }
+
+        @media (max-width: 500px) {
+
+            .auth-card {
+                padding: 25px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .remember-row {
+                flex-direction: column;
+
+                align-items: flex-start;
+
+                gap: 10px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="auth-container">
+
+    <div class="auth-card">
+
+        {{-- Logo --}}
+        <div class="logo">
+            🔑
+        </div>
 
 
-<div class="col-md-5 col-lg-4">
+        {{-- Heading --}}
+        <h1>
+            Welcome Back
+        </h1>
 
-    <div class="card auth-card p-4">
-
-        <h3 class="text-center mb-3">
-            <i class="bi bi-shield-lock me-2"></i>
-            Login
-        </h3>
-
-
-        {{-- Verification URL --}}
-        @if(session('verification_url'))
-
-            <div class="alert alert-success">
-
-                <i class="bi bi-envelope-check me-1"></i>
-
-                <strong>Verify your email!</strong>
-
-                <br>
-
-                <a
-                    href="{{ session('verification_url') }}"
-                    target="_blank"
-                >
-                    Click here to verify your email
-                </a>
-
-            </div>
-
-        @endif
+        <p class="subtitle">
+            Login using your secure login key
+        </p>
 
 
-        {{-- Success --}}
+        {{-- Success Message --}}
         @if(session('success'))
 
             <div class="alert alert-success">
-
-                <i class="bi bi-check-circle me-1"></i>
-
                 {{ session('success') }}
-
             </div>
 
         @endif
 
 
-        {{-- Error --}}
+        {{-- Error Message --}}
         @if(session('error'))
 
-            <div class="alert alert-danger">
-
-                <i class="bi bi-exclamation-triangle me-1"></i>
-
+            <div class="alert alert-error">
                 {{ session('error') }}
-
             </div>
 
         @endif
@@ -71,13 +407,19 @@
         {{-- Validation Errors --}}
         @if($errors->any())
 
-            <div class="alert alert-danger">
+            <div class="alert alert-error">
 
-                <ul class="mb-0">
+                <strong>
+                    Login failed:
+                </strong>
+
+                <ul style="margin: 8px 0 0 18px;">
 
                     @foreach($errors->all() as $error)
 
-                        <li>{{ $error }}</li>
+                        <li>
+                            {{ $error }}
+                        </li>
 
                     @endforeach
 
@@ -88,262 +430,170 @@
         @endif
 
 
-        {{-- =================================================
-             LOGIN TABS
-        ================================================== --}}
+        {{-- Email Verification --}}
+        @if(session('verification_required'))
 
-        <ul
-            class="nav nav-tabs login-tabs mb-3"
-            id="loginTab"
-            role="tablist"
+            <div class="verification-box">
+
+                📧 Please verify your email address
+                before logging in.
+
+            </div>
+
+        @endif
+
+
+        {{-- Login Form --}}
+        <form
+            method="POST"
+            action="{{ route('login') }}"
         >
 
-            {{-- LOGIN KEY --}}
-            <li
-                class="nav-item"
-                role="presentation"
-            >
+            @csrf
 
-                <button
-                    class="nav-link active"
-                    id="key-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#key-panel"
-                    type="button"
-                    role="tab"
+
+            {{-- =========================
+                 EMAIL
+            ========================== --}}
+            <div class="form-group">
+
+                <label for="email">
+
+                    Email Address
+
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value="{{ old('email') }}"
+                    placeholder="Enter your email address"
+                    autocomplete="email"
+                    required
+                    autofocus
                 >
 
-                    <i class="bi bi-key me-1"></i>
+                @error('email')
+
+                    <div class="error">
+                        {{ $message }}
+                    </div>
+
+                @enderror
+
+            </div>
+
+
+            {{-- =========================
+                 LOGIN KEY
+            ========================== --}}
+            <div class="form-group">
+
+                <label for="key">
 
                     Login Key
 
-                </button>
+                </label>
 
-            </li>
+                <div class="password-wrapper">
 
-
-            {{-- EMAIL + LOGIN KEY --}}
-            <li
-                class="nav-item"
-                role="presentation"
-            >
-
-                <button
-                    class="nav-link"
-                    id="email-key-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#email-key-panel"
-                    type="button"
-                    role="tab"
-                >
-
-                    <i class="bi bi-envelope-key me-1"></i>
-
-                    Email + Login Key
-
-                </button>
-
-            </li>
-
-        </ul>
-
-
-        <div
-            class="tab-content"
-            id="loginTabContent"
-        >
-
-
-            {{-- =================================================
-                 LOGIN KEY ONLY
-            ================================================== --}}
-
-            <div
-                class="tab-pane fade show active"
-                id="key-panel"
-                role="tabpanel"
-            >
-
-                <form
-                    method="POST"
-                    action="{{ route('login') }}"
-                >
-
-                    @csrf
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-
-                            <i class="bi bi-key me-1"></i>
-
-                            Login Key
-
-                        </label>
-
-                        <input
-                            type="password"
-                            name="key"
-                            class="form-control"
-                            placeholder="Enter your login key"
-                            required
-                            autofocus
-                        >
-
-                    </div>
-
-
-                    <div class="mb-3 form-check">
-
-                        <input
-                            type="checkbox"
-                            name="remember"
-                            class="form-check-input"
-                            id="rememberKey"
-                        >
-
-                        <label
-                            class="form-check-label"
-                            for="rememberKey"
-                        >
-                            Remember Me
-                        </label>
-
-                    </div>
-
-
-                    <button
-                        type="submit"
-                        class="btn btn-success w-100"
+                    <input
+                        type="password"
+                        id="key"
+                        name="key"
+                        placeholder="Enter your login key"
+                        autocomplete="current-password"
+                        required
                     >
 
-                        <i class="bi bi-box-arrow-in-right me-1"></i>
-
-                        Login with Key
-
+                    <button
+                        type="button"
+                        class="toggle-password"
+                        onclick="togglePassword(
+                            'key',
+                            this
+                        )"
+                    >
+                        Show
                     </button>
 
-                </form>
+                </div>
+
+                @error('key')
+
+                    <div class="error">
+                        {{ $message }}
+                    </div>
+
+                @enderror
 
             </div>
 
 
-            {{-- =================================================
-                 EMAIL + LOGIN KEY
-            ================================================== --}}
+            {{-- =========================
+                 REMEMBER ME + FORGOT KEY
+            ========================== --}}
+            <div class="remember-row">
 
-            <div
-                class="tab-pane fade"
-                id="email-key-panel"
-                role="tabpanel"
-            >
+                <label class="remember">
 
-                <form
-                    method="POST"
-                    action="{{ route('login') }}"
-                >
-
-                    @csrf
-
-
-                    {{-- EMAIL --}}
-                    <div class="mb-3">
-
-                        <label class="form-label">
-
-                            <i class="bi bi-envelope me-1"></i>
-
-                            Email
-
-                        </label>
-
-                        <input
-                            type="email"
-                            name="email"
-                            value="{{ old('email') }}"
-                            class="form-control"
-                            placeholder="Enter your email"
-                            required
-                        >
-
-                    </div>
-
-
-                    {{-- LOGIN KEY --}}
-                    <div class="mb-3">
-
-                        <label class="form-label">
-
-                            <i class="bi bi-key me-1"></i>
-
-                            Login Key
-
-                        </label>
-
-                        <input
-                            type="password"
-                            name="key"
-                            class="form-control"
-                            placeholder="Enter your login key"
-                            required
-                        >
-
-                    </div>
-
-
-                    {{-- REMEMBER --}}
-                    <div class="mb-3 form-check">
-
-                        <input
-                            type="checkbox"
-                            name="remember"
-                            class="form-check-input"
-                            id="rememberEmailKey"
-                        >
-
-                        <label
-                            class="form-check-label"
-                            for="rememberEmailKey"
-                        >
-                            Remember Me
-                        </label>
-
-                    </div>
-
-
-                    <button
-                        type="submit"
-                        class="btn btn-primary w-100"
+                    <input
+                        type="checkbox"
+                        name="remember"
+                        value="1"
+                        {{ old('remember') ? 'checked' : '' }}
                     >
 
-                        <i class="bi bi-box-arrow-in-right me-1"></i>
+                    Remember me
 
-                        Login with Email + Key
+                </label>
 
-                    </button>
 
-                </form>
+                <a
+                    href="{{ route('forgot.key.form') }}"
+                    class="forgot-link"
+                >
+                    Forgot Login Key?
+                </a>
 
             </div>
+
+
+            {{-- =========================
+                 LOGIN BUTTON
+            ========================== --}}
+            <button
+                type="submit"
+                class="btn"
+            >
+                Login
+            </button>
+
+        </form>
+
+
+        {{-- Register Link --}}
+        <div class="bottom-text">
+
+            Don't have an account?
+
+            <a href="{{ route('register.form') }}">
+                Create Account
+            </a>
 
         </div>
 
 
-        {{-- LINKS --}}
-        <div class="text-center mt-3">
+        {{-- Security Information --}}
+        <div class="security-info">
 
-            <a href="{{ route('forgot.key.form') }}">
-                Forgot Login Key?
-            </a>
+            🔒 Your login key is securely protected
+            using HMAC hashing.
 
-            <span class="mx-2">|</span>
+            <br>
 
-            New user?
-
-            <a href="{{ route('register.form') }}">
-                Register here
-            </a>
+            Never share your login key with anyone.
 
         </div>
 
@@ -351,6 +601,35 @@
 
 </div>
 
-</div>
 
-@endsection
+<script>
+
+    function togglePassword(inputId, button) {
+
+        const input = document.getElementById(inputId);
+
+        if (!input) {
+            return;
+        }
+
+        if (input.type === 'password') {
+
+            input.type = 'text';
+
+            button.textContent = 'Hide';
+
+        } else {
+
+            input.type = 'password';
+
+            button.textContent = 'Show';
+
+        }
+
+    }
+
+</script>
+
+</body>
+
+</html>

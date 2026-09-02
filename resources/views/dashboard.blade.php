@@ -1,1246 +1,774 @@
-@extends('layouts.app')
+<!DOCTYPE html>
 
-@section('title', 'Dashboard')
+<html lang="en">
 
-@section('content')
+<head>
 
-{{-- ============================================================
-     DASHBOARD HEADER
+    ```
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+        @yield('title', 'Key Auth System')
+    </title>
+
+    {{-- Bootstrap --}}
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    {{-- Bootstrap Icons --}}
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+        rel="stylesheet">
+
+
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --bg-color: #f5f7fb;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --muted-color: #6c757d;
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+            min-height: 100vh;
+        }
+
+
+        /* ======================================================
+       NAVBAR
+    ====================================================== */
+
+        .main-navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+        }
+
+
+        .navbar-brand {
+            font-weight: 700;
+        }
+
+
+        .navbar .nav-link {
+            transition: 0.2s ease;
+        }
+
+
+        .navbar .nav-link:hover {
+            opacity: 0.8;
+        }
+
+
+        /* ======================================================
+       MAIN CONTENT
+    ====================================================== */
+
+        main {
+            min-height: calc(100vh - 70px);
+        }
+
+
+        .page-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+
+        /* ======================================================
+       CARDS
+    ====================================================== */
+
+        .auth-card,
+        .main-card,
+        .stat-card {
+            background: var(--card-bg);
+            border: 0;
+            border-radius: 14px;
+            box-shadow:
+                0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+
+        .auth-card {
+            transition: transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+
+        .auth-card:hover {
+            box-shadow:
+                0 6px 25px rgba(0, 0, 0, 0.08);
+        }
+
+
+        /* ======================================================
+       BUTTONS
+    ====================================================== */
+
+        .btn {
+            border-radius: 8px;
+        }
+
+
+        /* ======================================================
+       FORMS
+    ====================================================== */
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+        }
+
+
+        .form-control:focus,
+        .form-select:focus {
+            box-shadow:
+                0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+        }
+
+
+        /* ======================================================
+       TABLE
+    ====================================================== */
+
+        .table {
+            margin-bottom: 0;
+        }
+
+
+        .table th {
+            white-space: nowrap;
+        }
+
+
+        .table td {
+            vertical-align: middle;
+        }
+
+
+        /* ======================================================
+       BADGES
+    ====================================================== */
+
+        .badge {
+            border-radius: 6px;
+        }
+
+
+        /* ======================================================
+       ALERTS
+    ====================================================== */
+
+        .alert {
+            border-radius: 10px;
+        }
+
+
+        /* ======================================================
+       FOOTER
+    ====================================================== */
+
+        .main-footer {
+            padding: 20px;
+            text-align: center;
+            color: var(--muted-color);
+            font-size: 14px;
+        }
+
+
+        /* ======================================================
+       DARK MODE
+    ====================================================== */
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #f1f1f1;
+            --muted-color: #adb5bd;
+
+            background: #121212;
+            color: #f1f1f1;
+        }
+
+
+        body.dark-mode .card,
+        body.dark-mode .auth-card,
+        body.dark-mode .main-card,
+        body.dark-mode .stat-card {
+            background: #1e1e1e;
+            color: #f1f1f1;
+        }
+
+
+        body.dark-mode .table {
+            --bs-table-bg: #1e1e1e;
+            --bs-table-color: #f1f1f1;
+            --bs-table-border-color: #343a40;
+        }
+
+
+        body.dark-mode .table-light {
+            --bs-table-bg: #2a2a2a;
+            --bs-table-color: #f1f1f1;
+        }
+
+
+        body.dark-mode .text-muted {
+            color: #adb5bd !important;
+        }
+
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background: #2a2a2a;
+            color: #fff;
+            border-color: #495057;
+        }
+
+
+        body.dark-mode .form-control::placeholder {
+            color: #adb5bd;
+        }
+
+
+        body.dark-mode .border {
+            border-color: #495057 !important;
+        }
+
+
+        body.dark-mode .bg-light {
+            background: #2a2a2a !important;
+        }
+
+
+        /* ======================================================
+       RESPONSIVE
+    ====================================================== */
+
+        @media (max-width: 768px) {
+
+            .page-container {
+                padding: 20px 12px;
+            }
+
+
+            .navbar .btn {
+                width: 100%;
+            }
+
+
+            .table-responsive {
+                font-size: 14px;
+            }
+
+        }
+    </style>
+
+    @stack('styles')
+    ```
+
+</head>
+
+<body>
+
+    {{-- ============================================================
+NAVBAR
 ============================================================ --}}
 
-<div class="row mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark main-navbar">
 
-    <div class="col-12">
+        ```
+        <div class="container-fluid px-3 px-lg-4">
 
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 
-            <div>
+            {{-- BRAND --}}
 
-                <h2 class="mb-1">
-                    Welcome, {{ $user->name }}
-                </h2>
+            <a
+                class="navbar-brand"
+                href="{{ session()->has('keyauth_user') ? route('dashboard') : route('login.form') }}">
 
-                <p class="text-muted mb-0">
-                    Here's what's happening with your account.
-                </p>
+                <i class="bi bi-shield-lock-fill me-2"></i>
 
-            </div>
+                Key Auth System
 
-            <div>
+            </a>
 
-                <span class="badge bg-success px-3 py-2">
 
-                    <i class="bi bi-shield-check me-1"></i>
+            {{-- MOBILE BUTTON --}}
 
-                    Account Secure
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
 
-                </span>
+                <span class="navbar-toggler-icon"></span>
 
-            </div>
+            </button>
 
-        </div>
 
-    </div>
+            {{-- NAVIGATION --}}
 
-</div>
+            <div
+                class="collapse navbar-collapse"
+                id="mainNavbar">
 
+                <ul class="navbar-nav ms-auto align-items-lg-center">
 
-{{-- ============================================================
-     STATISTICS
-============================================================ --}}
 
-<div class="row g-3 mb-4">
+                    @if(session()->has('keyauth_user'))
 
-    {{-- TOTAL USERS --}}
+                    {{-- ==================================================
+                     DASHBOARD
+                =================================================== --}}
 
-    <div class="col-md-3">
+                    <li class="nav-item">
 
-        <div class="card stat-card p-3 h-100">
+                        <a
+                            href="{{ route('dashboard') }}"
+                            class="nav-link">
 
-            <div class="d-flex align-items-center">
+                            <i class="bi bi-speedometer2 me-1"></i>
 
-                <div class="bg-primary bg-gradient text-white rounded p-3 me-3">
+                            Dashboard
 
-                    <i class="bi bi-people"></i>
+                        </a>
 
-                </div>
+                    </li>
 
-                <div>
 
-                    <div class="text-muted small">
-                        Total Users
-                    </div>
+                    {{-- ==================================================
+                     PROFILE
+                =================================================== --}}
 
-                    <div class="fw-bold fs-4">
-                        {{ $stats['total_users'] }}
-                    </div>
+                    <li class="nav-item">
 
-                </div>
+                        <a
+                            href="{{ route('profile.edit') }}"
+                            class="nav-link">
 
-            </div>
+                            <i class="bi bi-person me-1"></i>
 
-        </div>
+                            Profile
 
-    </div>
+                        </a>
 
+                    </li>
 
-    {{-- VERIFIED USERS --}}
 
-    <div class="col-md-3">
+                    {{-- ==================================================
+                     SECURITY
+                =================================================== --}}
 
-        <div class="card stat-card p-3 h-100">
+                    <li class="nav-item">
 
-            <div class="d-flex align-items-center">
+                        <a
+                            href="{{ route('profile.security') }}"
+                            class="nav-link">
 
-                <div class="bg-success bg-gradient text-white rounded p-3 me-3">
+                            <i class="bi bi-shield-lock me-1"></i>
 
-                    <i class="bi bi-check-circle"></i>
+                            Security
 
-                </div>
+                        </a>
 
-                <div>
+                    </li>
 
-                    <div class="text-muted small">
-                        Verified Users
-                    </div>
 
-                    <div class="fw-bold fs-4">
-                        {{ $stats['verified_users'] }}
-                    </div>
+                    {{-- ==================================================
+                     SESSIONS
+                =================================================== --}}
 
-                </div>
+                    <li class="nav-item">
 
-            </div>
+                        <a
+                            href="{{ route('sessions.index') }}"
+                            class="nav-link">
 
-        </div>
+                            <i class="bi bi-display me-1"></i>
 
-    </div>
+                            Sessions
 
+                        </a>
 
-    {{-- TODAY LOGINS --}}
+                    </li>
 
-    <div class="col-md-3">
 
-        <div class="card stat-card p-3 h-100">
+                    {{-- ==================================================
+                     USERS
+                =================================================== --}}
 
-            <div class="d-flex align-items-center">
+                    <li class="nav-item">
 
-                <div class="bg-info bg-gradient text-white rounded p-3 me-3">
+                        <a
+                            href="{{ route('users.index') }}"
+                            class="nav-link">
 
-                    <i class="bi bi-box-arrow-in-right"></i>
+                            <i class="bi bi-people me-1"></i>
 
-                </div>
+                            Users
 
-                <div>
+                        </a>
 
-                    <div class="text-muted small">
-                        Today's Logins
-                    </div>
+                    </li>
 
-                    <div class="fw-bold fs-4">
-                        {{ $stats['today_logins'] }}
-                    </div>
 
-                </div>
+                    {{-- ==================================================
+                     THEME BUTTON
+                =================================================== --}}
 
-            </div>
+                    <li class="nav-item">
 
-        </div>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-light ms-lg-2 mt-2 mt-lg-0"
+                            id="themeToggle"
+                            title="Toggle dark mode">
 
-    </div>
+                            <i class="bi bi-moon"></i>
 
+                        </button>
 
-    {{-- FAILED LOGINS TODAY --}}
+                    </li>
 
-    <div class="col-md-3">
 
-        <div class="card stat-card p-3 h-100">
+                    {{-- ==================================================
+                     LOGOUT
+                =================================================== --}}
 
-            <div class="d-flex align-items-center">
+                    <li class="nav-item">
 
-                <div class="bg-danger bg-gradient text-white rounded p-3 me-3">
+                        <form
+                            method="POST"
+                            action="{{ route('logout') }}"
+                            class="d-inline">
 
-                    <i class="bi bi-x-circle"></i>
+                            @csrf
 
-                </div>
+                            <button
+                                type="submit"
+                                class="btn btn-sm btn-danger ms-lg-2 mt-2 mt-lg-0">
 
-                <div>
+                                <i class="bi bi-box-arrow-right me-1"></i>
 
-                    <div class="text-muted small">
-                        Failed Logins Today
-                    </div>
+                                Logout
 
-                    <div class="fw-bold fs-4 text-danger">
-                        {{ $stats['failed_logins_today'] }}
-                    </div>
+                            </button>
 
-                </div>
+                        </form>
 
-            </div>
+                    </li>
 
-        </div>
-
-    </div>
-
-</div>
-
-
-{{-- ============================================================
-     LOGIN KEY SECURITY
-============================================================ --}}
-
-<div class="card auth-card p-4 mb-4">
-
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-
-        <div>
-
-            <h5 class="mb-1">
-
-                <i class="bi bi-key-fill me-2"></i>
-
-                Login Key Security
-
-            </h5>
-
-            <p class="text-muted small mb-0">
-
-                Your account uses email + login key authentication.
-
-            </p>
-
-        </div>
-
-        <span class="badge bg-success px-3 py-2">
-
-            <i class="bi bi-shield-check me-1"></i>
-
-            Login Key Enabled
-
-        </span>
-
-    </div>
-
-
-    <div class="row g-3">
-
-        {{-- LOGIN KEY STATUS --}}
-
-        <div class="col-md-4">
-
-            <div class="border rounded p-3 h-100">
-
-                <div class="text-muted small mb-2">
-
-                    <i class="bi bi-key me-1"></i>
-
-                    Authentication Method
-
-                </div>
-
-                <div class="fw-bold">
-
-                    Email + Login Key
-
-                </div>
-
-                <div class="small text-success mt-2">
-
-                    <i class="bi bi-check-circle me-1"></i>
-
-                    Active
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        {{-- LAST LOGIN --}}
-
-        <div class="col-md-4">
-
-            <div class="border rounded p-3 h-100">
-
-                <div class="text-muted small mb-2">
-
-                    <i class="bi bi-clock-history me-1"></i>
-
-                    Last Successful Login
-
-                </div>
-
-                @if($securitySummary['last_login'])
-
-                    <div class="fw-bold">
-
-                        {{ $securitySummary['last_login']->login_at->format('M d, Y') }}
-
-                    </div>
-
-                    <div class="small text-muted">
-
-                        {{ $securitySummary['last_login']->login_at->format('h:i A') }}
-
-                    </div>
-
-                    <div class="small text-success mt-2">
-
-                        {{ $securitySummary['last_login']->login_at->diffForHumans() }}
-
-                    </div>
-
-                @else
-
-                    <div class="text-muted">
-                        No login history
-                    </div>
-
-                @endif
-
-            </div>
-
-        </div>
-
-
-        {{-- FAILED ATTEMPTS --}}
-
-        <div class="col-md-4">
-
-            <div class="border rounded p-3 h-100">
-
-                <div class="text-muted small mb-2">
-
-                    <i class="bi bi-shield-exclamation me-1"></i>
-
-                    Failed Attempts
-
-                </div>
-
-                <div class="fw-bold text-danger">
-
-                    {{ $securitySummary['total_failed_logins'] }}
-
-                </div>
-
-                <div class="small text-muted mt-2">
-
-                    {{ $securitySummary['failed_last_7_days'] }}
-
-                    failed in the last 7 days
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-{{-- ============================================================
-     LOGIN SECURITY
-============================================================ --}}
-
-<div class="card auth-card p-4 mb-4">
-
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-
-        <div>
-
-            <h5 class="mb-1">
-
-                <i class="bi bi-shield-lock me-2"></i>
-
-                Login Security
-
-            </h5>
-
-            <p class="text-muted small mb-0">
-
-                Monitor your recent login activity and account security.
-
-            </p>
-
-        </div>
-
-        <a
-            href="{{ route('profile.sessions') }}"
-            class="btn btn-sm btn-outline-primary"
-        >
-
-            <i class="bi bi-display me-1"></i>
-
-            View Sessions
-
-        </a>
-
-    </div>
-
-
-    <div class="row g-3">
-
-        {{-- LAST LOGIN --}}
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="border rounded p-3 h-100">
-
-                <div class="text-muted small mb-2">
-
-                    <i class="bi bi-clock-history me-1"></i>
-
-                    Last Successful Login
-
-                </div>
-
-                @if($securitySummary['last_login'])
-
-                    <div class="fw-bold">
-
-                        {{ $securitySummary['last_login']->login_at->format('M d, Y') }}
-
-                    </div>
-
-                    <div class="small text-muted">
-
-                        {{ $securitySummary['last_login']->login_at->format('h:i A') }}
-
-                    </div>
-
-                    <div class="small text-success mt-2">
-
-                        {{ $securitySummary['last_login']->login_at->diffForHumans() }}
-
-                    </div>
-
-                @else
-
-                    <div class="text-muted">
-                        No login history
-                    </div>
-
-                @endif
-
-            </div>
-
-        </div>
-
-
-        {{-- IP --}}
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="border rounded p-3 h-100">
-
-                <div class="text-muted small mb-2">
-
-                    <i class="bi bi-globe me-1"></i>
-
-                    Last Login IP
-
-                </div>
-
-                @if($securitySummary['last_login'])
-
-                    <div class="fw-bold text-break">
-
-                        {{ $securitySummary['last_login']->ip_address ?? 'Unknown' }}
-
-                    </div>
-
-                    <div class="small text-muted mt-2">
-
-                        {{ $securitySummary['last_login']->platform ?? 'Unknown Platform' }}
-
-                    </div>
-
-                @else
-
-                    <div class="text-muted">
-                        Unknown
-                    </div>
-
-                @endif
-
-            </div>
-
-        </div>
-
-
-        {{-- DEVICE --}}
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="border rounded p-3 h-100">
-
-                <div class="text-muted small mb-2">
-
-                    <i class="bi bi-laptop me-1"></i>
-
-                    Last Login Device
-
-                </div>
-
-                @if($securitySummary['last_login'])
-
-                    <div class="fw-bold">
-
-                        {{ $securitySummary['last_login']->device_type ?? 'Unknown' }}
-
-                    </div>
-
-                    <div class="small text-muted mt-2">
-
-                        Browser:
-                        {{ $securitySummary['last_login']->browser ?? 'Unknown' }}
-
-                    </div>
-
-                @else
-
-                    <div class="text-muted">
-                        Unknown
-                    </div>
-
-                @endif
-
-            </div>
-
-        </div>
-
-
-        {{-- LOGIN COUNTS --}}
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="border rounded p-3 h-100">
-
-                <div class="text-muted small mb-2">
-
-                    <i class="bi bi-bar-chart me-1"></i>
-
-                    Login Attempts
-
-                </div>
-
-                <div class="fw-bold">
-
-                    {{ $securitySummary['total_successful_logins'] }}
-
-                    successful
-
-                </div>
-
-                <div class="small text-danger mt-1">
-
-                    {{ $securitySummary['total_failed_logins'] }}
-
-                    failed
-
-                </div>
-
-                <div class="small text-muted mt-1">
-
-                    {{ $securitySummary['failed_last_7_days'] }}
-
-                    failed in last 7 days
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-{{-- ============================================================
-     SECURITY WARNING
-============================================================ --}}
-
-@if($recentFailedLogins->count() > 0)
-
-    <div class="alert alert-warning alert-dismissible fade show mb-4">
-
-        <div class="d-flex">
-
-            <div class="me-3 fs-4">
-
-                <i class="bi bi-exclamation-triangle"></i>
-
-            </div>
-
-            <div>
-
-                <strong>
-                    Recent failed login attempts detected
-                </strong>
-
-                <div class="small mt-1">
-
-                    There have been
-
-                    <strong>
-                        {{ $securitySummary['failed_last_7_days'] }}
-                    </strong>
-
-                    failed login attempt(s) on your account during the last 7 days.
-
-                </div>
-
-                <a
-                    href="#recent-login-history"
-                    class="small fw-bold"
-                >
-
-                    Review login activity
-
-                </a>
-
-            </div>
-
-        </div>
-
-        <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-        ></button>
-
-    </div>
-
-@endif
-
-
-<div class="row g-3">
-
-
-    {{-- ========================================================
-         LEFT COLUMN
-    ========================================================= --}}
-
-    <div class="col-lg-5">
-
-
-        {{-- RECENT LOGINS --}}
-
-        <div
-            class="card auth-card p-3 mb-3"
-            id="recent-login-history"
-        >
-
-            <div class="d-flex justify-content-between align-items-center mb-3">
-
-                <h5 class="mb-0">
-
-                    <i class="bi bi-clock-history me-2"></i>
-
-                    Recent Login Activity
-
-                </h5>
-
-                <span class="badge bg-primary">
-
-                    {{ $recentLogins->count() }}
-
-                </span>
-
-            </div>
-
-
-            @if($recentLogins->count() > 0)
-
-                <div class="table-responsive">
-
-                    <table class="table table-sm align-middle">
-
-                        <thead>
-
-                            <tr>
-
-                                <th>Date</th>
-
-                                <th>Device</th>
-
-                                <th>IP</th>
-
-                                <th>Status</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            @foreach($recentLogins as $login)
-
-                                <tr>
-
-                                    <td>
-
-                                        <div>
-
-                                            {{ $login->login_at->format('M d') }}
-
-                                        </div>
-
-                                        <small class="text-muted">
-
-                                            {{ $login->login_at->format('H:i') }}
-
-                                        </small>
-
-                                    </td>
-
-                                    <td>
-
-                                        {{ $login->device_type ?? '-' }}
-
-                                    </td>
-
-                                    <td>
-
-                                        <small>
-
-                                            {{ $login->ip_address ?? '-' }}
-
-                                        </small>
-
-                                    </td>
-
-                                    <td>
-
-                                        @if($login->status === 'success')
-
-                                            <span class="badge bg-success">
-
-                                                Success
-
-                                            </span>
-
-                                        @elseif($login->status === 'failed')
-
-                                            <span class="badge bg-danger">
-
-                                                Failed
-
-                                            </span>
-
-                                        @else
-
-                                            <span class="badge bg-warning">
-
-                                                Blocked
-
-                                            </span>
-
-                                        @endif
-
-                                    </td>
-
-                                </tr>
-
-                            @endforeach
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            @else
-
-                <div class="text-center py-4">
-
-                    <i class="bi bi-clock-history fs-1 text-muted"></i>
-
-                    <p class="text-muted mt-2 mb-0">
-
-                        No login history yet.
-
-                    </p>
-
-                </div>
-
-            @endif
-
-        </div>
-
-
-        {{-- ACTIVE SESSIONS --}}
-
-        <div class="card auth-card p-3">
-
-            <div class="d-flex justify-content-between align-items-center mb-3">
-
-                <h5 class="mb-0">
-
-                    <i class="bi bi-display me-2"></i>
-
-                    Active Sessions
-
-                </h5>
-
-                <form
-                    method="POST"
-                    action="{{ route('logout.all') }}"
-                    class="d-inline"
-                >
-
-                    @csrf
-
-                    <button
-                        type="submit"
-                        class="btn btn-sm btn-outline-danger"
-                        onclick="return confirm('Logout from all devices?')"
-                    >
-
-                        <i class="bi bi-box-arrow-right me-1"></i>
-
-                        Logout All
-
-                    </button>
-
-                </form>
-
-            </div>
-
-
-            @if($userSessions->count() > 0)
-
-                <div class="table-responsive">
-
-                    <table class="table table-sm align-middle">
-
-                        <thead>
-
-                            <tr>
-
-                                <th>Device</th>
-
-                                <th>IP</th>
-
-                                <th>Last Active</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            @foreach($userSessions as $session)
-
-                                <tr class="{{ $session->is_current ? 'table-success' : '' }}">
-
-                                    <td>
-
-                                        <i class="bi bi-{{
-                                            $session->device_type == 'mobile'
-                                                ? 'phone'
-                                                : (
-                                                    $session->device_type == 'tablet'
-                                                        ? 'tablet'
-                                                        : 'laptop'
-                                                )
-                                        }} me-1"></i>
-
-                                        {{ $session->device_type ?? '-' }}
-
-                                        @if($session->is_current)
-
-                                            <span class="badge bg-success ms-1">
-
-                                                Current
-
-                                            </span>
-
-                                        @endif
-
-                                    </td>
-
-                                    <td>
-
-                                        {{ $session->ip_address ?? '-' }}
-
-                                    </td>
-
-                                    <td>
-
-                                        @if($session->last_activity)
-
-                                            {{ $session->last_activity->diffForHumans() }}
-
-                                        @else
-
-                                            -
-
-                                        @endif
-
-                                    </td>
-
-                                </tr>
-
-                            @endforeach
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            @else
-
-                <p class="text-muted mb-0">
-
-                    No active sessions.
-
-                </p>
-
-            @endif
-
-        </div>
-
-    </div>
-
-
-    {{-- ========================================================
-         RIGHT COLUMN
-    ========================================================= --}}
-
-    <div class="col-lg-7">
-
-
-        {{-- PROFILE INFORMATION --}}
-
-        <div class="card auth-card p-3 mb-3">
-
-            <h5 class="mb-3">
-
-                <i class="bi bi-person me-2"></i>
-
-                Profile Information
-
-            </h5>
-
-
-            <div class="d-flex align-items-center mb-3">
-
-                @if($user->profile_pic)
-
-                    <img
-                        src="{{ asset('storage/' . $user->profile_pic) }}"
-                        class="rounded-circle me-3"
-                        width="80"
-                        height="80"
-                        alt="Profile"
-                    >
-
-                @else
-
-                    <div
-                        class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                        style="width:80px;height:80px;font-size:2rem;"
-                    >
-
-                        {{ strtoupper(substr($user->name, 0, 1)) }}
-
-                    </div>
-
-                @endif
-
-
-                <div>
-
-                    <div class="fw-bold">
-
-                        {{ $user->name }}
-
-                    </div>
-
-                    <div class="text-muted">
-
-                        {{ $user->email }}
-
-                    </div>
-
-
-                    @if($user->hasVerifiedEmail())
-
-                        <span class="badge bg-success">
-
-                            <i class="bi bi-check-circle me-1"></i>
-
-                            Verified
-
-                        </span>
 
                     @else
 
-                        <span class="badge bg-warning">
+                    {{-- ==================================================
+                     LOGIN
+                =================================================== --}}
 
-                            <i class="bi bi-exclamation-circle me-1"></i>
+                    <li class="nav-item">
 
-                            Unverified
+                        <a
+                            href="{{ route('login.form') }}"
+                            class="nav-link">
 
-                        </span>
+                            <i class="bi bi-box-arrow-in-right me-1"></i>
+
+                            Login
+
+                        </a>
+
+                    </li>
+
+
+                    {{-- ==================================================
+                     REGISTER
+                =================================================== --}}
+
+                    <li class="nav-item">
+
+                        <a
+                            href="{{ route('register.form') }}"
+                            class="nav-link">
+
+                            <i class="bi bi-person-plus me-1"></i>
+
+                            Register
+
+                        </a>
+
+                    </li>
 
                     @endif
 
-                </div>
-
-            </div>
-
-
-            <div class="d-flex gap-2 flex-wrap">
-
-                <a
-                    href="{{ route('profile.form') }}"
-                    class="btn btn-sm btn-primary"
-                >
-
-                    <i class="bi bi-pencil me-1"></i>
-
-                    Edit Profile
-
-                </a>
-
-                <a
-                    href="{{ route('profile.security') }}"
-                    class="btn btn-sm btn-outline-secondary"
-                >
-
-                    <i class="bi bi-shield me-1"></i>
-
-                    Security
-
-                </a>
+                </ul>
 
             </div>
 
         </div>
+        ```
 
+    </nav>
 
-        {{-- LAST 7 DAYS ACTIVITY --}}
+    {{-- ============================================================
+FLASH MESSAGES
+============================================================ --}}
 
-        <div class="card auth-card p-3 mb-3">
+    @if(session('success'))
 
-            <h5 class="mb-3">
+    ```
+    <div class="container-fluid px-3 px-lg-4 pt-3">
 
-                <i class="bi bi-bar-chart me-2"></i>
+        <div
+            class="alert alert-success alert-dismissible fade show"
+            role="alert">
 
-                Your Last 7 Days Activity
+            <i class="bi bi-check-circle me-2"></i>
 
-            </h5>
+            {{ session('success') }}
 
-
-            @php
-
-                $chartData = $recentLoginsChart;
-
-                $maxCount = $chartData->max('count') ?: 1;
-
-            @endphp
-
-
-            <div
-                class="d-flex align-items-end gap-2"
-                style="height: 200px;"
-            >
-
-                @for($i = 6; $i >= 0; $i--)
-
-                    @php
-
-                        $date = now()->subDays($i);
-
-                        $dayData = $chartData->firstWhere(
-                            'date',
-                            $date->format('Y-m-d')
-                        );
-
-                        $count = $dayData
-                            ? $dayData->count
-                            : 0;
-
-                        $height = ($count / $maxCount) * 100;
-
-                    @endphp
-
-
-                    <div class="flex-fill text-center">
-
-                        <div
-                            class="bg-success mx-auto rounded"
-                            style="
-                                width: 100%;
-                                height: {{ max($height, 2) }}%;
-                                max-height: 180px;
-                            "
-                            title="{{ $count }} successful login(s)"
-                        ></div>
-
-                        <div class="small text-muted mt-1">
-
-                            {{ $date->format('D') }}
-
-                        </div>
-
-                        <div class="fw-bold">
-
-                            {{ $count }}
-
-                        </div>
-
-                    </div>
-
-                @endfor
-
-            </div>
-
-        </div>
-
-
-        {{-- RECENT FAILED ATTEMPTS --}}
-
-        <div class="card auth-card p-3">
-
-            <div class="d-flex justify-content-between align-items-center mb-3">
-
-                <h5 class="mb-0">
-
-                    <i class="bi bi-shield-exclamation me-2"></i>
-
-                    Recent Failed Attempts
-
-                </h5>
-
-                @if($recentFailedLogins->count() > 0)
-
-                    <span class="badge bg-danger">
-
-                        {{ $recentFailedLogins->count() }}
-
-                    </span>
-
-                @endif
-
-            </div>
-
-
-            @if($recentFailedLogins->count() > 0)
-
-                @foreach($recentFailedLogins as $failedLogin)
-
-                    <div class="d-flex align-items-center border-bottom py-3">
-
-                        {{-- ICON --}}
-
-                        <div
-                            class="bg-danger bg-opacity-10 text-danger rounded p-2 me-3"
-                            style="min-width:45px;text-align:center;"
-                        >
-
-                            <i class="bi bi-x-circle fs-5"></i>
-
-                        </div>
-
-
-                        {{-- DETAILS --}}
-
-                        <div class="flex-grow-1">
-
-                            <div class="fw-semibold text-danger">
-
-                                Failed login attempt
-
-                            </div>
-
-                            <div class="small text-muted">
-
-                                {{ $failedLogin->login_at->format('M d, Y h:i A') }}
-
-                                ·
-
-                                {{ $failedLogin->device_type ?? 'Unknown device' }}
-
-                            </div>
-
-                            <div class="small text-muted">
-
-                                <i class="bi bi-globe me-1"></i>
-
-                                IP:
-
-                                {{ $failedLogin->ip_address ?? 'Unknown' }}
-
-                            </div>
-
-                            <div class="small text-muted">
-
-                                <i class="bi bi-browser-chrome me-1"></i>
-
-                                Browser:
-
-                                {{ $failedLogin->browser ?? 'Unknown' }}
-
-                            </div>
-
-                            @if($failedLogin->attempted_identifier)
-
-                                <div class="small text-muted">
-
-                                    <i class="bi bi-person me-1"></i>
-
-                                    Attempted:
-
-                                    {{ $failedLogin->attempted_identifier }}
-
-                                </div>
-
-                            @endif
-
-                        </div>
-
-
-                        {{-- STATUS --}}
-
-                        <span class="badge bg-danger">
-
-                            Failed
-
-                        </span>
-
-                    </div>
-
-                @endforeach
-
-            @else
-
-                <div class="text-center py-4">
-
-                    <i class="bi bi-shield-check text-success fs-2"></i>
-
-                    <p class="text-muted mb-0 mt-2">
-
-                        No failed login attempts found.
-
-                    </p>
-
-                </div>
-
-            @endif
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
 
         </div>
 
     </div>
+    ```
 
-</div>
+    @endif
 
-@endsection
+    @if(session('error'))
 
+    ```
+    <div class="container-fluid px-3 px-lg-4 pt-3">
+
+        <div
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert">
+
+            <i class="bi bi-exclamation-triangle me-2"></i>
+
+            {{ session('error') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+    </div>
+    ```
+
+    @endif
+
+    {{-- ============================================================
+VALIDATION ERRORS
+============================================================ --}}
+
+    @if($errors->any())
+
+    ```
+    <div class="container-fluid px-3 px-lg-4 pt-3">
+
+        <div
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert">
+
+            <strong>
+
+                <i class="bi bi-exclamation-triangle me-2"></i>
+
+                Please fix the following errors:
+
+            </strong>
+
+            <ul class="mb-0 mt-2">
+
+                @foreach($errors->all() as $error)
+
+                <li>
+                    {{ $error }}
+                </li>
+
+                @endforeach
+
+            </ul>
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+    </div>
+    ```
+
+    @endif
+
+    {{-- ============================================================
+PAGE CONTENT
+============================================================ --}}
+
+    <main>
+
+        ```
+        <div class="page-container">
+
+            @yield('content')
+
+        </div>
+        ```
+
+    </main>
+
+    {{-- ============================================================
+FOOTER
+============================================================ --}}
+
+    <footer class="main-footer">
+
+        ```
+        <div>
+
+            &copy; {{ date('Y') }}
+
+            Key Auth System.
+
+            All rights reserved.
+
+        </div>
+        ```
+
+    </footer>
+
+    {{-- ============================================================
+BOOTSTRAP JS
+============================================================ --}}
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    {{-- ============================================================
+DARK MODE
+============================================================ --}}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const themeToggle =
+                document.getElementById('themeToggle');
+
+            const body =
+                document.body;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Load Saved Theme
+            |--------------------------------------------------------------------------
+            */
+
+            const savedTheme =
+                localStorage.getItem('keyauth-theme');
+
+
+            if (savedTheme === 'dark') {
+
+                body.classList.add('dark-mode');
+
+                if (themeToggle) {
+
+                    themeToggle.innerHTML =
+                        '<i class="bi bi-sun"></i>';
+
+                }
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Toggle Theme
+            |--------------------------------------------------------------------------
+            */
+
+            if (themeToggle) {
+
+                themeToggle.addEventListener('click', function() {
+
+                    body.classList.toggle('dark-mode');
+
+
+                    if (body.classList.contains('dark-mode')) {
+
+                        localStorage.setItem(
+                            'keyauth-theme',
+                            'dark'
+                        );
+
+
+                        themeToggle.innerHTML =
+                            '<i class="bi bi-sun"></i>';
+
+                    } else {
+
+                        localStorage.setItem(
+                            'keyauth-theme',
+                            'light'
+                        );
+
+
+                        themeToggle.innerHTML =
+                            '<i class="bi bi-moon"></i>';
+
+                    }
+
+                });
+
+            }
+
+        });
+    </script>
+
+    @stack('scripts')
+
+</body>
+
+</html>
