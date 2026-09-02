@@ -1,22 +1,28 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\KeyAuthController;
-
-Route::get('/', function () {
-
-    if (session()->has('keyauth_user')) {
-        return redirect()->route('dashboard');
-    }
-
-    return redirect()->route('login.form');
-
-});
+use App\Http\Middleware\KeyAuthMiddleware;
 
 
 /*
 |--------------------------------------------------------------------------
-| Registration
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/',
+    function () {
+        return redirect()->route('login.form');
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Authentication
 |--------------------------------------------------------------------------
 */
 
@@ -31,12 +37,6 @@ Route::post(
 )->name('register');
 
 
-/*
-|--------------------------------------------------------------------------
-| Login
-|--------------------------------------------------------------------------
-*/
-
 Route::get(
     '/login',
     [KeyAuthController::class, 'loginForm']
@@ -45,26 +45,19 @@ Route::get(
 Route::post(
     '/login',
     [KeyAuthController::class, 'login']
-)
-    ->middleware('throttle:5,1')
-    ->name('login');
+)->name('login');
 
 
 /*
 |--------------------------------------------------------------------------
-| Two Factor Authentication
+| Generate Login Key
 |--------------------------------------------------------------------------
 */
 
 Route::get(
-    '/2fa',
-    [KeyAuthController::class, 'twoFactorForm']
-)->name('2fa.form');
-
-Route::post(
-    '/2fa/verify',
-    [KeyAuthController::class, 'verify2fa']
-)->name('2fa.verify');
+    '/generate-login-key',
+    [KeyAuthController::class, 'generateLoginKey']
+)->name('login-key.generate');
 
 
 /*
@@ -74,16 +67,9 @@ Route::post(
 */
 
 Route::get(
-    '/email/verify/{id}/{hash}',
+    '/verify-email/{id}/{hash}',
     [KeyAuthController::class, 'verifyEmail']
-)
-    ->name('verification.verify')
-    ->middleware('signed');
-
-Route::post(
-    '/email/verification-notification',
-    [KeyAuthController::class, 'resendVerification']
-)->name('verification.resend');
+)->name('verification.verify');
 
 
 /*
@@ -100,7 +86,7 @@ Route::get(
 Route::post(
     '/forgot-key',
     [KeyAuthController::class, 'sendResetKeyLink']
-)->name('forgot.key.send');
+)->name('forgot.key');
 
 Route::get(
     '/reset-key/{token}',
@@ -119,10 +105,14 @@ Route::post(
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['keyauth'])->group(function () {
+Route::middleware([
+    KeyAuthMiddleware::class
+])->group(function () {
 
     /*
+    |--------------------------------------------------------------------------
     | Dashboard
+    |--------------------------------------------------------------------------
     */
 
     Route::get(
@@ -132,72 +122,131 @@ Route::middleware(['keyauth'])->group(function () {
 
 
     /*
+    |--------------------------------------------------------------------------
+    | Logout
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        '/logout',
+        [KeyAuthController::class, 'logout']
+    )->name('logout');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Logout All Devices
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        '/logout-all-devices',
+        [KeyAuthController::class, 'logoutAllDevices']
+    )->name('logout.all.devices');
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Profile
+    |--------------------------------------------------------------------------
     */
 
     Route::get(
         '/profile',
         [KeyAuthController::class, 'profileForm']
-    )->name('profile.form');
+    )->name('profile.edit');
 
-    Route::post(
+    Route::put(
         '/profile',
         [KeyAuthController::class, 'updateProfile']
     )->name('profile.update');
 
 
     /*
+    |--------------------------------------------------------------------------
     | Security
+    |--------------------------------------------------------------------------
     */
 
     Route::get(
-        '/profile/security',
+        '/security',
         [KeyAuthController::class, 'securityForm']
     )->name('profile.security');
 
-
-    /*
-    | 2FA
-    */
-
     Route::post(
-        '/profile/security/2fa',
+        '/security/2fa',
         [KeyAuthController::class, 'toggleTwoFactor']
     )->name('2fa.toggle');
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | 2FA Setup
+    |--------------------------------------------------------------------------
+    */
+
     Route::get(
-        '/profile/security/2fa/setup',
+        '/2fa/setup',
         [KeyAuthController::class, 'twoFactorSetup']
     )->name('2fa.setup');
 
     Route::post(
-        '/profile/security/2fa/confirm',
+        '/2fa/setup',
         [KeyAuthController::class, 'confirmTwoFactorSetup']
-    )->name('2fa.confirm');
+    )->name('2fa.setup.confirm');
 
 
     /*
-    | Password
+    |--------------------------------------------------------------------------
+    | 2FA Login
+    |--------------------------------------------------------------------------
     */
 
+    Route::get(
+        '/2fa',
+        [KeyAuthController::class, 'twoFactorForm']
+    )->name('2fa.form');
+
     Route::post(
-        '/profile/password',
+        '/2fa',
+        [KeyAuthController::class, 'verify2fa']
+    )->name('2fa.verify');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Password
+    |--------------------------------------------------------------------------
+    */
+
+    Route::put(
+        '/password',
         [KeyAuthController::class, 'updatePassword']
     )->name('password.update');
 
 
     /*
+    |--------------------------------------------------------------------------
     | Sessions
+    |--------------------------------------------------------------------------
     */
 
     Route::get(
-        '/profile/sessions',
+        '/sessions',
         [KeyAuthController::class, 'sessionsList']
-    )->name('profile.sessions');
+    )->name('sessions.index');
 
 
     /*
-    | Users
+    |--------------------------------------------------------------------------
+    | USER MANAGEMENT
+    |--------------------------------------------------------------------------
+    |
+    | Feature 3: Search
+    | Feature 4: Sorting
+    | Feature 5: Pagination
+    | Feature 6: Delete
+    |
     */
 
     Route::get(
@@ -205,38 +254,9 @@ Route::middleware(['keyauth'])->group(function () {
         [KeyAuthController::class, 'usersList']
     )->name('users.index');
 
-
-    /*
-    | Logout All
-    */
-
-    Route::post(
-        '/logout-all',
-        [KeyAuthController::class, 'logoutAllDevices']
-    )->name('logout.all');
+    Route::delete(
+        '/users/{id}',
+        [KeyAuthController::class, 'deleteUser']
+    )->name('users.delete');
 
 });
-
-
-/*
-|--------------------------------------------------------------------------
-| Logout
-|--------------------------------------------------------------------------
-*/
-
-Route::get(
-    '/logout',
-    [KeyAuthController::class, 'logout']
-)->name('logout');
-
-
-/*
-|--------------------------------------------------------------------------
-| Get Login Key
-|--------------------------------------------------------------------------
-*/
-
-Route::get(
-    '/get-login-key',
-    [KeyAuthController::class, 'getLoginKey']
-)->name('get.login.key');

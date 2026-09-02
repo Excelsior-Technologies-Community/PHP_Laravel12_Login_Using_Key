@@ -50,9 +50,6 @@ class KeyAuthController extends Controller
 
             'email' => $request->email,
 
-            /*
-             * Always store login key as HMAC.
-             */
             'login_key' => $this->hashLoginKey(
                 $request->login_key
             ),
@@ -117,21 +114,9 @@ class KeyAuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            /*
-             * Email is optional so existing key-only login
-             * continues to work.
-             */
             'email' => 'nullable|email',
-
-            /*
-             * key is used for either:
-             * - login key
-             * - email when using password login
-             */
             'key' => 'required|string',
-
             'password' => 'nullable|string',
-
             'remember' => 'nullable|boolean',
         ]);
 
@@ -151,30 +136,19 @@ class KeyAuthController extends Controller
 
         if ($request->filled('password')) {
 
-            /*
-             * If email field is supplied, use it.
-             */
             if ($email) {
 
                 $user = KeyAuth::where(
                     'email',
                     $email
                 )->first();
-
             } else {
 
-                /*
-                 * Existing behaviour:
-                 * key field can contain email.
-                 */
                 $user = KeyAuth::where(
                     'email',
                     $key
                 )->first();
 
-                /*
-                 * Or login key + password.
-                 */
                 if (!$user) {
 
                     $user = KeyAuth::where(
@@ -184,9 +158,6 @@ class KeyAuthController extends Controller
                 }
             }
 
-            /*
-             * Invalid password/email/key.
-             */
             if (
                 !$user ||
                 !$user->password ||
@@ -221,19 +192,8 @@ class KeyAuthController extends Controller
         |--------------------------------------------------------------------------
         | LOGIN KEY LOGIN
         |--------------------------------------------------------------------------
-        */
+        */ else {
 
-        else {
-
-            /*
-             * NEW BEHAVIOUR:
-             *
-             * If email is provided together with login key,
-             * first find that exact user.
-             *
-             * This allows a failed login-key attempt to be
-             * associated with the correct account.
-             */
             if ($email) {
 
                 $user = KeyAuth::where(
@@ -241,9 +201,6 @@ class KeyAuthController extends Controller
                     $email
                 )->first();
 
-                /*
-                 * User does not exist.
-                 */
                 if (!$user) {
 
                     $this->recordLoginHistory(
@@ -261,9 +218,6 @@ class KeyAuthController extends Controller
                         ->withInput();
                 }
 
-                /*
-                 * Compare supplied login key with stored HMAC.
-                 */
                 if (
                     !hash_equals(
                         (string) $user->login_key,
@@ -271,13 +225,6 @@ class KeyAuthController extends Controller
                     )
                 ) {
 
-                    /*
-                     * IMPORTANT:
-                     *
-                     * Because we know the email,
-                     * we can safely associate this failed
-                     * login-key attempt with this user.
-                     */
                     $this->recordLoginHistory(
                         $user->id,
                         $request,
@@ -292,25 +239,12 @@ class KeyAuthController extends Controller
                         )
                         ->withInput();
                 }
-            }
-
-            /*
-             * OLD KEY-ONLY LOGIN.
-             *
-             * Existing users can still login using only
-             * their login key.
-             */
-            else {
+            } else {
 
                 $user = KeyAuth::findByLoginKey(
                     $key
                 );
 
-                /*
-                 * Invalid key without email.
-                 *
-                 * Cannot safely associate it with a user.
-                 */
                 if (!$user) {
 
                     $this->recordLoginHistory(
@@ -608,12 +542,6 @@ class KeyAuthController extends Controller
             );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | DASHBOARD STATISTICS
-        |--------------------------------------------------------------------------
-        */
-
         $stats = [
 
             'total_users' => KeyAuth::count(),
@@ -632,11 +560,6 @@ class KeyAuthController extends Controller
                 )
                 ->count(),
 
-            /*
-             * Because failed login-key attempts are now stored
-             * with keyauth_id when email is provided, this query
-             * will automatically count them.
-             */
             'failed_logins_today' => LoginHistory::where(
                 'keyauth_id',
                 $user->id
@@ -652,25 +575,13 @@ class KeyAuthController extends Controller
                 ->count(),
         ];
 
-        /*
-        |--------------------------------------------------------------------------
-        | RECENT LOGIN HISTORY
-        |--------------------------------------------------------------------------
-        */
-
         $recentLogins = LoginHistory::where(
             'keyauth_id',
             $user->id
         )
-            ->latest('login_at')
-            ->limit(10)
+            ->oldest('login_at')
+            ->limit(5)
             ->get();
-
-        /*
-        |--------------------------------------------------------------------------
-        | LAST SUCCESSFUL LOGIN
-        |--------------------------------------------------------------------------
-        */
 
         $lastSuccessfulLogin = LoginHistory::where(
             'keyauth_id',
@@ -683,12 +594,6 @@ class KeyAuthController extends Controller
             ->latest('login_at')
             ->first();
 
-        /*
-        |--------------------------------------------------------------------------
-        | TOTAL SUCCESSFUL LOGINS
-        |--------------------------------------------------------------------------
-        */
-
         $totalSuccessfulLogins = LoginHistory::where(
             'keyauth_id',
             $user->id
@@ -699,12 +604,6 @@ class KeyAuthController extends Controller
             )
             ->count();
 
-        /*
-        |--------------------------------------------------------------------------
-        | TOTAL FAILED LOGINS
-        |--------------------------------------------------------------------------
-        */
-
         $totalFailedLogins = LoginHistory::where(
             'keyauth_id',
             $user->id
@@ -714,12 +613,6 @@ class KeyAuthController extends Controller
                 'failed'
             )
             ->count();
-
-        /*
-        |--------------------------------------------------------------------------
-        | FAILED LOGINS LAST 7 DAYS
-        |--------------------------------------------------------------------------
-        */
 
         $failedLoginsLast7Days = LoginHistory::where(
             'keyauth_id',
@@ -736,12 +629,6 @@ class KeyAuthController extends Controller
             )
             ->count();
 
-        /*
-        |--------------------------------------------------------------------------
-        | RECENT FAILED LOGINS
-        |--------------------------------------------------------------------------
-        */
-
         $recentFailedLogins = LoginHistory::where(
             'keyauth_id',
             $user->id
@@ -753,12 +640,6 @@ class KeyAuthController extends Controller
             ->latest('login_at')
             ->limit(5)
             ->get();
-
-        /*
-        |--------------------------------------------------------------------------
-        | LOGIN ACTIVITY CHART
-        |--------------------------------------------------------------------------
-        */
 
         $recentLoginsChart = LoginHistory::selectRaw(
             'DATE(login_at) as date, COUNT(*) as count'
@@ -783,12 +664,6 @@ class KeyAuthController extends Controller
             )
             ->get();
 
-        /*
-        |--------------------------------------------------------------------------
-        | ACTIVE SESSIONS
-        |--------------------------------------------------------------------------
-        */
-
         $userSessions = KeyAuthSession::where(
             'keyauth_id',
             $user->id
@@ -797,12 +672,6 @@ class KeyAuthController extends Controller
                 'last_activity'
             )
             ->get();
-
-        /*
-        |--------------------------------------------------------------------------
-        | CURRENT SESSION
-        |--------------------------------------------------------------------------
-        */
 
         $currentSession = KeyAuthSession::where(
             'keyauth_id',
@@ -814,28 +683,22 @@ class KeyAuthController extends Controller
             )
             ->first();
 
-        /*
-        |--------------------------------------------------------------------------
-        | SECURITY SUMMARY
-        |--------------------------------------------------------------------------
-        */
-
         $securitySummary = [
 
             'last_login' =>
-                $lastSuccessfulLogin,
+            $lastSuccessfulLogin,
 
             'total_successful_logins' =>
-                $totalSuccessfulLogins,
+            $totalSuccessfulLogins,
 
             'total_failed_logins' =>
-                $totalFailedLogins,
+            $totalFailedLogins,
 
             'failed_last_7_days' =>
-                $failedLoginsLast7Days,
+            $failedLoginsLast7Days,
 
             'current_session' =>
-                $currentSession,
+            $currentSession,
         ];
 
         return view(
@@ -1093,9 +956,6 @@ class KeyAuthController extends Controller
             new ResetLoginKey($token)
         );
 
-        /*
-         * Generate reset URL.
-         */
         $resetUrl = URL::temporarySignedRoute(
             'reset.key.form',
             now()->addHours(1),
@@ -1197,11 +1057,6 @@ class KeyAuthController extends Controller
             );
         }
 
-        /*
-         * Never store the raw login key.
-         */
-        $oldKey = $user->login_key;
-
         $user->login_key =
             $this->hashLoginKey(
                 $request->login_key
@@ -1217,9 +1072,6 @@ class KeyAuthController extends Controller
             'auditable_type' => KeyAuth::class,
             'auditable_id' => $user->id,
 
-            /*
-             * Do not store old/new raw login keys.
-             */
             'old_values' => [
                 'login_key' => '[REDACTED]',
             ],
@@ -1488,7 +1340,6 @@ class KeyAuthController extends Controller
                 base64_encode(
                     $result->getString()
                 );
-
         } catch (\Exception $e) {
 
             $qrCodeSvg = null;
@@ -1607,9 +1458,9 @@ class KeyAuthController extends Controller
 
         $user->forceFill([
             'password' =>
-                Hash::make(
-                    $request->password
-                ),
+            Hash::make(
+                $request->password
+            ),
         ])->save();
 
         AuditLog::create([
@@ -1657,45 +1508,170 @@ class KeyAuthController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | USERS
+    | USERS - SEARCH / SORT / PAGINATION
     |--------------------------------------------------------------------------
     */
 
-    public function usersList(
-        Request $request
-    ) {
+    public function usersList(Request $request)
+    {
         $query = KeyAuth::query();
 
+        // Search
         if ($request->filled('search')) {
+            $search = $request->search;
 
-            $query->where(
-                function ($q) use ($request) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('id', 'like', "%{$search}%");
+            });
+        }
 
-                    $q->where(
-                        'name',
-                        'like',
-                        '%' . $request->search . '%'
-                    )
-                    ->orWhere(
-                        'email',
-                        'like',
-                        '%' . $request->search . '%'
-                    );
-                }
-            );
+        // Sorting
+        $sortBy = $request->get('sort_by', 'id');
+        $sortOrder = $request->get('sort_order', 'asc');
+
+        $allowedSorts = [
+            'id',
+            'name',
+            'email',
+            'created_at',
+        ];
+
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'id';
+        }
+
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'asc';
         }
 
         $users = $query
-            ->orderByDesc('created_at')
-            ->paginate(10)
-            ->appends(
-                $request->query()
+            ->orderBy($sortBy, $sortOrder)
+            ->paginate(5)
+            ->withQueryString();
+
+        return view('users.index', compact(
+            'users',
+            'sortBy',
+            'sortOrder'
+        ));
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | DELETE USER
+    |--------------------------------------------------------------------------
+    */
+
+    public function deleteUser(
+        Request $request,
+        $id
+    ) {
+        $currentUserId =
+            Session::get(
+                'keyauth_user'
             );
 
-        return view(
-            'users.index',
-            compact('users')
+        $user = KeyAuth::find(
+            $id
         );
+
+        if (!$user) {
+
+            return back()->with(
+                'error',
+                'User not found.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent deleting yourself
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            (int) $user->id ===
+            (int) $currentUserId
+        ) {
+
+            return back()->with(
+                'error',
+                'You cannot delete your own account.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Store old user information
+        |--------------------------------------------------------------------------
+        */
+
+        $oldValues = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete sessions
+        |--------------------------------------------------------------------------
+        */
+
+        KeyAuthSession::where(
+            'keyauth_id',
+            $user->id
+        )->delete();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete user
+        |--------------------------------------------------------------------------
+        */
+
+        $user->delete();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Audit Log
+        |--------------------------------------------------------------------------
+        */
+
+        AuditLog::create([
+            'keyauth_id' => $currentUserId,
+            'event' => 'user_deleted',
+            'auditable_type' => KeyAuth::class,
+            'auditable_id' => $id,
+            'old_values' => $oldValues,
+            'new_values' => null,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'url' => $request->fullUrl(),
+        ]);
+
+        return back()->with(
+            'success',
+            'User deleted successfully.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | GENERATE LOGIN KEY
+    |--------------------------------------------------------------------------
+    */
+
+    public function generateLoginKey()
+    {
+        $key = strtoupper(
+            Str::random(8)
+        );
+
+        return response()->json([
+            'status' => true,
+            'key' => $key,
+        ]);
     }
 
     /*
@@ -1741,37 +1717,37 @@ class KeyAuthController extends Controller
         LoginHistory::create([
 
             'keyauth_id' =>
-                $userId,
+            $userId,
 
             'attempted_identifier' =>
-                $attemptedIdentifier,
+            $attemptedIdentifier,
 
             'ip_address' =>
-                $request->ip(),
+            $request->ip(),
 
             'user_agent' =>
-                $request->userAgent(),
+            $request->userAgent(),
 
             'device_type' =>
-                $this->getDeviceType(
-                    $request->userAgent()
-                ),
+            $this->getDeviceType(
+                $request->userAgent()
+            ),
 
             'browser' =>
-                $this->getBrowser(
-                    $request->userAgent()
-                ),
+            $this->getBrowser(
+                $request->userAgent()
+            ),
 
             'platform' =>
-                $this->getPlatform(
-                    $request->userAgent()
-                ),
+            $this->getPlatform(
+                $request->userAgent()
+            ),
 
             'status' =>
-                $status,
+            $status,
 
             'login_at' =>
-                now(),
+            now(),
         ]);
     }
 
@@ -1786,18 +1762,11 @@ class KeyAuthController extends Controller
         ?KeyAuth $user
     ): string {
 
-        /*
-         * If user exists, always store email.
-         */
         if ($user) {
 
             return $user->email;
         }
 
-        /*
-         * If identifier is an email,
-         * it is safe to store as attempted identifier.
-         */
         if (
             filter_var(
                 $identifier,
@@ -1808,9 +1777,6 @@ class KeyAuthController extends Controller
             return $identifier;
         }
 
-        /*
-         * Never store raw login key.
-         */
         return 'Invalid Login Key';
     }
 
@@ -1846,29 +1812,29 @@ class KeyAuthController extends Controller
 
             [
                 'session_id' =>
-                    Session::getId(),
+                Session::getId(),
             ],
 
             [
                 'keyauth_id' =>
-                    $user->id,
+                $user->id,
 
                 'ip_address' =>
-                    $request->ip(),
+                $request->ip(),
 
                 'user_agent' =>
-                    $request->userAgent(),
+                $request->userAgent(),
 
                 'device_type' =>
-                    $this->getDeviceType(
-                        $request->userAgent()
-                    ),
+                $this->getDeviceType(
+                    $request->userAgent()
+                ),
 
                 'last_activity' =>
-                    now(),
+                now(),
 
                 'is_current' =>
-                    true,
+                true,
             ]
         );
     }
