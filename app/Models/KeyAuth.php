@@ -47,46 +47,54 @@ class KeyAuth extends Authenticatable
 
     public function loginHistories()
     {
-        return $this->hasMany(LoginHistory::class, 'keyauth_id');
+        return $this->hasMany(
+            LoginHistory::class,
+            'keyauth_id'
+        );
     }
 
     public function sessions()
     {
-        return $this->hasMany(KeyAuthSession::class, 'keyauth_id');
+        return $this->hasMany(
+            KeyAuthSession::class,
+            'keyauth_id'
+        );
     }
 
     public function auditLogs()
     {
-        return $this->hasMany(AuditLog::class, 'keyauth_id');
+        return $this->hasMany(
+            AuditLog::class,
+            'keyauth_id'
+        );
     }
 
     /*
     |--------------------------------------------------------------------------
     | Login Key
     |--------------------------------------------------------------------------
+    |
+    | IMPORTANT:
+    | The controller handles HMAC hashing.
+    | Do not hash the key again here.
+    |
     */
-
-    public function setLoginKeyAttribute($value)
-    {
-        if ($value !== null && $value !== '') {
-            $this->attributes['login_key'] = hash_hmac(
-                'sha256',
-                $value,
-                config('app.key')
-            );
-        }
-    }
 
     public function getPlainLoginKey()
     {
         return null;
     }
 
-    public static function findByLoginKey(string $key)
-    {
+    public static function findByLoginKey(
+        string $key
+    ) {
         return static::where(
             'login_key',
-            hash_hmac('sha256', $key, config('app.key'))
+            hash_hmac(
+                'sha256',
+                trim($key),
+                config('app.key')
+            )
         )->first();
     }
 
@@ -136,13 +144,16 @@ class KeyAuth extends Authenticatable
 
     public function hasVerifiedEmail()
     {
-        return !is_null($this->email_verified_at);
+        return !is_null(
+            $this->email_verified_at
+        );
     }
 
     public function markEmailAsVerified()
     {
         $this->forceFill([
-            'email_verified_at' => $this->freshTimestamp(),
+            'email_verified_at' =>
+                $this->freshTimestamp(),
         ])->save();
     }
 
@@ -154,22 +165,29 @@ class KeyAuth extends Authenticatable
 
     public function hasConfirmedTwoFactor()
     {
-        return !is_null($this->two_factor_confirmed_at);
+        return !is_null(
+            $this->two_factor_confirmed_at
+        );
     }
 
     public function confirmTwoFactor()
     {
         $this->forceFill([
-            'two_factor_confirmed_at' => $this->freshTimestamp(),
+            'two_factor_confirmed_at' =>
+                $this->freshTimestamp(),
         ])->save();
     }
 
     public function generateTwoFactorSecret()
     {
-        $secret = base64_encode(random_bytes(16));
+        $secret =
+            base64_encode(
+                random_bytes(16)
+            );
 
         $this->forceFill([
-            'two_factor_secret' => encrypt($secret),
+            'two_factor_secret' =>
+                encrypt($secret),
         ])->save();
 
         return $secret;
@@ -181,20 +199,36 @@ class KeyAuth extends Authenticatable
             return null;
         }
 
-        return decrypt($this->two_factor_secret);
+        return decrypt(
+            $this->two_factor_secret
+        );
     }
 
-    public function getTwoFactorQrCodeUrl(string $secret): string
-    {
+    public function getTwoFactorQrCodeUrl(
+        string $secret
+    ): string {
+
         $issuer = urlencode(
-            config('app.name', 'Key Auth System')
+            config(
+                'app.name',
+                'Key Auth System'
+            )
         );
 
-        $account = urlencode($this->email);
+        $account = urlencode(
+            $this->email
+        );
 
-        $rawSecret = base64_decode($secret, true);
+        $rawSecret =
+            base64_decode(
+                $secret,
+                true
+            );
 
-        $base32Secret = $this->base32Encode($rawSecret);
+        $base32Secret =
+            $this->base32Encode(
+                $rawSecret
+            );
 
         return 'otpauth://totp/'
             . $issuer
@@ -207,13 +241,20 @@ class KeyAuth extends Authenticatable
             . '&algorithm=SHA1&digits=6&period=30';
     }
 
-    private function base32Encode(string $data): string
-    {
-        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    private function base32Encode(
+        string $data
+    ): string {
+
+        $alphabet =
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
         $binary = '';
 
-        foreach (str_split($data) as $char) {
+        foreach (
+            str_split($data)
+            as $char
+        ) {
+
             $binary .= sprintf(
                 '%08b',
                 ord($char)
@@ -222,7 +263,11 @@ class KeyAuth extends Authenticatable
 
         $result = '';
 
-        for ($i = 0; $i < strlen($binary); $i += 5) {
+        for (
+            $i = 0;
+            $i < strlen($binary);
+            $i += 5
+        ) {
 
             $chunk = substr(
                 $binary,
@@ -236,9 +281,10 @@ class KeyAuth extends Authenticatable
                 '0'
             );
 
-            $result .= $alphabet[
-                bindec($chunk)
-            ];
+            $result .=
+                $alphabet[
+                    bindec($chunk)
+                ];
         }
 
         return $result;
